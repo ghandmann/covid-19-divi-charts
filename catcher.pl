@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use 5.10.0;
 use DateTime;
-use LWP::Simple;
 use Mojo::UserAgent;
 use Mojo::URL;
 use Mojo::Log;
