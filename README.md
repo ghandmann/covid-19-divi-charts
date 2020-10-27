@@ -10,9 +10,15 @@ So it should not be included in the repo. But to prevent everybody from re-downl
 
 A daily updated version of the website can be found [here](https://sveneppler.de/covid-19/).
 
+## General reminder
+
+This is all rather hacky. Don't expect to check this repo out and it just works for you. :)
+
 ## `catcher.pl`
 
 Just a short perl script to fetch alle CSV-Files from the [DIVI website](https://www.divi.de/divi-intensivregister-tagesreport-archiv-csv?layout=table)
+
+Currently the code only tries to fetch the last two pages (~40 Days) of the CSV-Reports, since all CSV until 26. of october are already included. If you need to fetch more/refetch everything you need to manually change the value of `$maxPageOffset` to your needs.
 
 ## `report-generator.pl`
 
