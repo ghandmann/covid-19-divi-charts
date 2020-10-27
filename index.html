@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIVI Reportdata over time</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/parallel-coordinates.js"></script>
+    <script src="./data.json"></script>
+
+    <style>
+    body {
+        font-family: sans-serif;
+        margin-bottom: 50px;
+    }
+    footer {
+        margin-top: 50px;
+        border-top: solid black 1px;
+    }
+    </style>
+</head>
+<body>
+    <div id="ICUUsageChart" style="width:100%; height:300px;"></div>
+    <div id="VentilatedChart" style="width:100%; height:300px;"></div>
+    <div id="CovidRateChart" style="width:100%; height:200px;"></div>
+    <footer>
+        <p>
+            Data source: <a href="https://www.divi.de/divi-intensivregister-tagesreport-archiv-csv?layout=table">DIVI e.V. Tagesreports as CSV</a><br/>
+            Tooling and Website: <a href="https://github.com/ghandmann/covid-19-divi-charts">GitHub Repository</a>
+
+        </p>
+    </footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        makeICUUsageGraph(diviData);
+        makeCovidVentilationGraph(diviData);
+        makeCovidRateChart(diviData);
+    });
+
+function makeCovidVentilationGraph(data) {
+    let seriesData = [
+        {
+            name: 'Ventilated',
+            data: []
+        },
+        {
+            name: 'Not Ventilated',
+            data: []
+        }
+        ];
+    
+    data.forEach(e => {
+        var date = new Date(e.date).getTime();
+        seriesData[0].data.push([date, e.covidPatients.ventilated]);
+        seriesData[1].data.push([date, e.covidPatients.total - e.covidPatients.ventilated]);
+    });
+
+    let myChart = Highcharts.chart('VentilatedChart', {
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: 'Ventilated vs. Not Ventilated COVID-19 patients'
+        },
+        xAxis: {
+            type: 'datetime',
+        },
+        yAxis: {
+            title: {
+                text: 'Patients'
+            }
+        },
+        plotOptions: {
+            series: {
+                stacking: "area",
+                marker: false,
+            }
+        },
+        series: seriesData,
+    });
+}
+
+function makeICUUsageGraph(data) {
+    let seriesData = [
+        {
+            name: 'Free ICU Capacity',
+            data: []
+        },
+        {
+            name: 'COVID-19 ICU Patients',
+            data: []
+        },
+        {
+            name: 'Other ICU Patients',
+            data: []
+        }
+        ];
+    
+    data.forEach(e => {
+        var date = new Date(e.date).getTime();
+        seriesData[1].data.push([date, e.covidPatients.total]);
+        seriesData[2].data.push([date, e.ICUBeds.used]);
+        seriesData[0].data.push([date, e.ICUBeds.free]);
+    });
+
+    let myChart = Highcharts.chart('ICUUsageChart', {
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: 'Usage of ICUs'
+        },
+        xAxis: {
+            type: 'datetime',
+        },
+        yAxis: {
+            title: {
+                text: 'ICU Beds'
+            }
+        },
+        plotOptions: {
+            series: {
+                stacking: "area",
+                marker: false,
+            }
+        },
+        series: seriesData,
+    });
+}
+
+function makeCovidRateChart(data) {
+    let seriesData = [
+        {
+            name: 'COVID-19',
+            data: []
+        }
+    ];
+    
+    data.forEach(e => {
+        var date = new Date(e.date).getTime();
+        seriesData[0].data.push([date, e.ICUBeds.covidRate*100]);
+    });
+
+    let myChart = Highcharts.chart('CovidRateChart', {
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'COVID-19 usage of ICU beds'
+        },
+        xAxis: {
+            type: 'datetime',
+            tooltipValueFormat: "{value}%",
+        },
+        yAxis: {
+            labels: {
+                format: '{value}%',
+            },
+            title: {
+                text: 'ICU Beds'
+            },
+        },
+        plotOptions: {
+            series: {
+                marker: false,
+            }
+        },
+        tooltip: {
+            valueSuffix: "%",
+        },
+        series: seriesData,
+    });
+}
+</script>
+</body>
+</html>
