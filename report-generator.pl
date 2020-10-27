@@ -27,7 +27,7 @@ foreach my $file (@files) {
     };
 }
 
-say j \@total;
+say "var diviData = " . j(\@total) . ";";
 
 sub formatRate {
     return sprintf("%0.2f", shift);
