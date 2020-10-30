@@ -77,6 +77,9 @@ function makeCovidVentilationGraph(data) {
             }
         },
         series: seriesData,
+        tooltip: {
+            formatter: formatTooltip,
+        }
     });
 }
 
@@ -125,6 +128,9 @@ function makeICUUsageGraph(data) {
             }
         },
         series: seriesData,
+        tooltip: {
+            formatter: formatTooltip,
+        }
     });
 }
 
@@ -170,6 +176,24 @@ function makeCovidRateChart(data) {
         },
         series: seriesData,
     });
+}
+
+function formatTooltip() {
+    var tooltip = this.series.name + ": " + this.point.y + "<br/>";
+
+    var index = this.point.index;
+    if(index > 0) {
+        var change = this.point.y - this.series.points[index-1].y;
+        change = change > 0 ? "+"+change : change;
+        var growthRate = (change / this.total * 100).toFixed(2);
+        tooltip += "24h Change: " + change + " (" + growthRate + "%)<br/>";
+    }
+
+    tooltip += "Total: " + this.total + "<br/>";
+    var parsedDate = new Date(this.point.x);
+    tooltip += parsedDate.getFullYear() + "-" + parsedDate.getMonth() + "-" + parsedDate.getDate();
+    
+    return tooltip;
 }
 </script>
 </body>
