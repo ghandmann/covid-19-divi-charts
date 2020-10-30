@@ -41,11 +41,13 @@ function makeCovidVentilationGraph(data) {
     let seriesData = [
         {
             name: 'Ventilated',
-            data: []
+            data: [],
+            color: "#f15c80",
         },
         {
             name: 'Not Ventilated',
-            data: []
+            data: [],
+            color: "#9dc7f1",
         }
         ];
     
@@ -87,15 +89,18 @@ function makeICUUsageGraph(data) {
     let seriesData = [
         {
             name: 'Free ICU Capacity',
-            data: []
+            data: [],
+            color: "#acf19d",
         },
         {
             name: 'COVID-19 ICU Patients',
-            data: []
+            data: [],
+            color: "#f15c80",
         },
         {
             name: 'Other ICU Patients',
-            data: []
+            data: [],
+            color: "#9dc7f1",
         }
         ];
     
