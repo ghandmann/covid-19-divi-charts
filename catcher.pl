@@ -32,7 +32,6 @@ while($pageOffset <= $maxPageOffset) {
 
     $linkElements->each(sub {
         my $url = $diviBaseUrl->clone->path(shift->attr("href"));
-        $log->info("Found url: $url");
         my ($date) = ($url =~ /divi-intensivregister-(\d\d\d\d-\d\d-\d\d)/);
 
         my $targetFile = "./DIVI/${date}.csv";
@@ -60,3 +59,4 @@ sub fetchCSV {
     $ua->get($url)->res->save_to($targetFile);
     $log->info("Fetched $url to $targetFile");
 }
+
