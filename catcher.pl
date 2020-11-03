@@ -17,7 +17,7 @@ my $overviewBase = "https://www.divi.de/divi-intensivregister-tagesreport-archiv
 my $pageOffset = 0;
 
 # only try getting the first 2 pages
-my $maxPageOffset = 40;
+my $maxPageOffset = 0;
 
 while($pageOffset <= $maxPageOffset) {
     my $pageUrl = $overviewBase . $pageOffset;
