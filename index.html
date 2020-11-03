@@ -151,7 +151,8 @@ function makeCovidRateChart(data) {
     
     data.forEach(e => {
         var date = new Date(e.date).getTime();
-        seriesData[0].data.push([date, e.ICUBeds.covidRate*100]);
+        var rate = (e.ICUBeds.covidRate*100).toFixed(0)*1; // dirty string to number hack :)
+        seriesData[0].data.push([date, rate]);
     });
 
     let myChart = Highcharts.chart('CovidRateChart', {
