@@ -22,6 +22,7 @@
 <body>
     <div id="ICUUsageChart" style="width:100%; height:300px;"></div>
     <div id="VentilatedChart" style="width:100%; height:300px;"></div>
+    <div id="DilayNewCovidPatients" style="width:100%; height:300px;"></div>
     <div id="CovidRateChart" style="width:100%; height:200px;"></div>
     <footer>
         <p>
@@ -35,6 +36,7 @@
         makeICUUsageGraph(diviData);
         makeCovidVentilationGraph(diviData);
         makeCovidRateChart(diviData);
+        makeDailyNewCovidPatientsGraph(diviData);
     });
 
 function makeCovidVentilationGraph(data) {
@@ -181,6 +183,53 @@ function makeCovidRateChart(data) {
         },
         tooltip: {
             valueSuffix: "%",
+        },
+        series: seriesData,
+    });
+}
+
+function makeDailyNewCovidPatientsGraph(data) {
+    let seriesData = [
+        {
+            name: 'New Patients',
+            data: [],
+        }
+    ];
+
+    // let discardFirstDay = data.shift();
+
+    let lastday = 2570;
+    
+    data.forEach(e => {
+        let date = new Date(e.date).getTime();
+        let newPatients = e.covidPatients.total - lastday;
+
+        seriesData[0].data.push([date, newPatients]);
+
+        lastday = e.covidPatients.total;
+    });
+
+    let myChart = Highcharts.chart('VentilatedChart', {
+        chart: {
+            type: 'column',
+            zoomType: "x",
+        },
+        title: {
+            text: 'New COVID-19 patients per day'
+        },
+        xAxis: {
+            type: 'datetime',
+        },
+        yAxis: {
+            title: {
+                text: 'Patients'
+            }
+        },
+        plotOptions: {
+            series: {
+                stacking: "area",
+                marker: false,
+            }
         },
         series: seriesData,
     });
