@@ -193,6 +193,8 @@ function makeDailyNewCovidPatientsGraph(data) {
         {
             name: 'New Patients',
             data: [],
+            negativeColor: 'green',
+            color: 'red',
         }
     ];
 
@@ -215,7 +217,7 @@ function makeDailyNewCovidPatientsGraph(data) {
             zoomType: "x",
         },
         title: {
-            text: 'New COVID-19 patients per day'
+            text: 'COVID-19 patients on ICUs 24h change'
         },
         xAxis: {
             type: 'datetime',
@@ -226,6 +228,7 @@ function makeDailyNewCovidPatientsGraph(data) {
             }
         },
         plotOptions: {
+            negativecolor: "red",
             series: {
                 stacking: "area",
                 marker: false,
