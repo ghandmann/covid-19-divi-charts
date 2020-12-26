@@ -108,7 +108,7 @@ function makeICUUsageGraph(data) {
     data.forEach(e => {
         var date = new Date(e.date).getTime();
         seriesData[1].data.push([date, e.covidPatients.total]);
-        seriesData[2].data.push([date, e.ICUBeds.used]);
+        seriesData[2].data.push([date, e.ICUBeds.used - e.covidPatients.total]);
         seriesData[0].data.push([date, e.ICUBeds.free]);
     });
 
