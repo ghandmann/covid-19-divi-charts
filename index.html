@@ -254,7 +254,7 @@ function formatTooltip() {
     var day = pad(parsedDate.getDate(), 2);
     var month = pad(parsedDate.getMonth() + 1, 2);
     var year = parsedDate.getFullYear();
-    tooltip += [day, month, year].join("-");
+    tooltip += [year, month, day].join("-");
     
     return tooltip;
 }
