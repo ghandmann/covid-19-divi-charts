@@ -199,9 +199,17 @@ function formatTooltip() {
 
     tooltip += "Total: " + this.total + "<br/>";
     var parsedDate = new Date(this.point.x);
-    tooltip += parsedDate.getFullYear() + "-" + parsedDate.getMonth() + "-" + parsedDate.getDate();
+    var day = pad(parsedDate.getDate(), 2);
+    var month = pad(parsedDate.getMonth() + 1, 2);
+    var year = parsedDate.getFullYear();
+    tooltip += [day, month, year].join("-");
     
     return tooltip;
+}
+
+function pad(num, size) {
+    var s = "000000000" + num;
+    return s.substr(s.length-size);
 }
 </script>
 </body>
