@@ -53,7 +53,7 @@ sub generateStatsForDate {
     foreach my $row (@$data) {
         # bundesland;gemeindeschluessel;anzahl_meldebereiche;faelle_covid_aktuell;faelle_covid_aktuell_beatmet;anzahl_standorte;betten_frei;betten_belegt;daten_stand
         $sumCovidTotal += $row->{faelle_covid_aktuell};
-        $sumCovidVentilated += $row->{faelle_covid_aktuell_beatmet} || 0;
+        $sumCovidVentilated += $row->{faelle_covid_aktuell_beatmet} || $row->{faelle_covid_aktuell_invasiv_beatmet} || 0;
 
         $sumICUTotal += $row->{betten_frei} + $row->{betten_belegt};
         $sumICUUsed += $row->{betten_belegt};
