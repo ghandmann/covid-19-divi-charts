@@ -7,6 +7,8 @@ use DateTime;
 use Mojo::UserAgent;
 use Mojo::URL;
 use Mojo::Log;
+use Tie::File;
+
 
 my $log = Mojo::Log->new(path => "./divi-catcher.log");
 my $ua = Mojo::UserAgent->new();
@@ -17,7 +19,7 @@ my $overviewBase = "https://www.divi.de/divi-intensivregister-tagesreport-archiv
 my $pageOffset = 0;
 
 # only try getting the first 2 pages
-my $maxPageOffset = 0;
+my $maxPageOffset = 20;
 
 while($pageOffset <= $maxPageOffset) {
     my $pageUrl = $overviewBase . $pageOffset;
@@ -41,6 +43,7 @@ while($pageOffset <= $maxPageOffset) {
         }
         else {
             fetchCSV($url, $targetFile);
+            filterCSV($targetFile);
         }
     });
 
@@ -60,3 +63,30 @@ sub fetchCSV {
     $log->info("Fetched $url to $targetFile");
 }
 
+# Since 2021-10-28 for some reason every CSV-File contains all data points since 2020-04.
+# So just filter out the "old" values.
+sub filterCSV {
+    my $fileName = shift;
+
+    my @fullFile;
+    open(my $readFh, "<", $fileName) or die "Failed to open for read: $!";
+    while(<$readFh>) {
+        push(@fullFile, $_);
+    }
+    close($readFh);
+
+    my $headerLine = $fullFile[0];
+    my $lastLine = $fullFile[-1];
+    my ($date) = split(/,/, $lastLine);
+
+    if($headerLine =~ /^bundesland/) {
+        return;
+    }
+
+    $log->info("Filtering CSV File '$fileName' to only contain values for date=$date");
+
+    my @newFile = ($headerLine, grep { /^$date/ } @fullFile);
+    open(my $writeFh, ">", $fileName) or die "Failed to open for write: $!";
+    print $writeFh join("", @newFile);
+    close($writeFh);
+}
