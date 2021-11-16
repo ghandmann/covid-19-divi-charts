@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd $HOME/projects/covid-19-divi-charts 
+
+perlbrew-cron --quiet --with 5.24.1@divi perl catcher.pl
+perlbrew-cron --quiet --with 5.24.1@divi perl report-generator.pl > $HOME/htdocs/covid-19/data.js
