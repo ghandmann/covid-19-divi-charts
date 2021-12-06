@@ -1,8 +1,6 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
-use 5.10.0;
+use Mojo::Base -strict, -signatures;
 use DateTime;
 use Mojo::UserAgent;
 use Mojo::URL;
@@ -13,80 +11,48 @@ use Tie::File;
 my $log = Mojo::Log->new(path => "./divi-catcher.log");
 my $ua = Mojo::UserAgent->new();
 
-my $diviBaseUrl = Mojo::URL->new("https://www.divi.de");
+my $edocBase = Mojo::URL->new("https://edoc.rki.de");
+my $rkiPageUrl = Mojo::URL->new("https://edoc.rki.de/handle/176904/7012");
 
-my $overviewBase = "https://www.divi.de/divi-intensivregister-tagesreport-archiv-csv?layout=table&start=";
-my $pageOffset = 0;
+my $dom = $ua->get($rkiPageUrl)->res->dom;
 
-# only try getting the first 2 pages
-my $maxPageOffset = 20;
+my $reportList = $dom->at("ul.ds-artifact-list");
+my $listItems = $reportList->children("li.ds-artifact-item");
+$log->info("Found " . $listItems->size . " ds-artifact-items");
 
-while($pageOffset <= $maxPageOffset) {
-    my $pageUrl = $overviewBase . $pageOffset;
-
-    $log->info("Fetching overview page=$pageUrl");
-
-    my $overviewPage = $ua->get($pageUrl)->res->dom;
-
-    my $linkElements = $overviewPage->find("td.edocman-document-title-td a");
-
-    my $linksFoundCount = $linkElements->size;
-
-    $linkElements->each(sub {
-        my $url = $diviBaseUrl->clone->path(shift->attr("href"));
-        my ($date) = ($url =~ /divi-intensivregister-(\d\d\d\d-\d\d-\d\d)/);
-
-        my $targetFile = "./DIVI/${date}.csv";
-
-        if(-f $targetFile) {
-            $log->info("$targetFile already exists. Not re-downloading report from $url");
-        }
-        else {
-            fetchCSV($url, $targetFile);
-            filterCSV($targetFile);
-        }
-    });
-
-    $pageOffset += 20;
-}
-
-sub fetchCSV {
-    my $url = shift;
-    my $targetFile = shift;
-
-    if($targetFile =~ /2020-04-24/) {
-        # this file has a completely different format, so we skip it.
+$listItems->each(sub($item, $num) {
+    my $dateBadge = $item->find(".artifact-badges span.badge span.date")->first;
+    if(!$dateBadge) {
+        $log->error("Failed to identify date badge!");
         return;
     }
 
-    $ua->get($url)->res->save_to($targetFile);
-    $log->info("Fetched $url to $targetFile");
-}
-
-# Since 2021-10-28 for some reason every CSV-File contains all data points since 2020-04.
-# So just filter out the "old" values.
-sub filterCSV {
-    my $fileName = shift;
-
-    my @fullFile;
-    open(my $readFh, "<", $fileName) or die "Failed to open for read: $!";
-    while(<$readFh>) {
-        push(@fullFile, $_);
-    }
-    close($readFh);
-
-    my $headerLine = $fullFile[0];
-    my $lastLine = $fullFile[-1];
-    my ($date) = split(/,/, $lastLine);
-
-    if($headerLine =~ /^bundesland/) {
+    my $date = $dateBadge->text;
+    if($date !~ /^\d\d\d\d-\d\d-\d\d$/) {
+        $log->error("Found some span.date but text='" . $date . "' does not look like date. ");
         return;
     }
 
-    $log->info("Filtering CSV File '$fileName' to only contain values for date=$date");
+    my $filename = "./DIVI/" . $date . ".csv";
 
-    my @newFile = ($headerLine, grep { /^$date/ } @fullFile);
-    open(my $writeFh, ">", $fileName) or die "Failed to open for write: $!";
-    print $writeFh join("", @newFile);
-    close($writeFh);
-}
+    if(-e $filename) {
+        $log->info("Tagesreport for $date already exists. Skipping.");
+    }
+    else {
+        $log->info("Fetching Tagesreport for $date");
+        my $link = $item->children("a")->first->attr("href");
+        my $subPage = $edocBase->path($link);
+        $log->debug("Fetching subPage=$subPage");
+
+        my $subPageDom = $ua->get($subPage)->res->dom;
+        my $artifactLinkUrl = $subPageDom->at(".ds-artifact-item > a")->attr("href");
+        my $artifactUrl = Mojo::URL->new($artifactLinkUrl)->base($edocBase)->to_abs();
+        $log->debug("ArtifactURL=$artifactUrl");
+
+        my $tagesreport = $ua->get($artifactUrl);
+        $tagesreport->res->save_to($filename);
+        $log->info("Stored Tagesreport for date=$date in filename=$filename");
+    }
+
+
+});
